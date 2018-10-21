@@ -1,5 +1,6 @@
 package com.example.spring_jwt_jpa.model;
 
+import com.example.spring_jwt_jpa.enumerador.RoleName;
 import org.hibernate.annotations.NaturalId;
 import javax.persistence.*;
 

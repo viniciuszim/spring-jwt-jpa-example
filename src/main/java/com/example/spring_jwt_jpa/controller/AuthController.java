@@ -1,16 +1,17 @@
 package com.example.spring_jwt_jpa.controller;
 
+import com.example.spring_jwt_jpa.enumerador.RoleName;
 import com.example.spring_jwt_jpa.exception.AppException;
+import com.example.spring_jwt_jpa.exception.ResourceNotFoundException;
+import com.example.spring_jwt_jpa.model.Device;
 import com.example.spring_jwt_jpa.model.Role;
-import com.example.spring_jwt_jpa.model.RoleName;
 import com.example.spring_jwt_jpa.model.User;
-import com.example.spring_jwt_jpa.model.UserApp;
 import com.example.spring_jwt_jpa.payload.ApiResponse;
 import com.example.spring_jwt_jpa.payload.JwtAuthenticationResponse;
 import com.example.spring_jwt_jpa.payload.LoginRequest;
 import com.example.spring_jwt_jpa.payload.SignUpRequest;
+import com.example.spring_jwt_jpa.repository.DeviceRepository;
 import com.example.spring_jwt_jpa.repository.RoleRepository;
-import com.example.spring_jwt_jpa.repository.UserAppRepository;
 import com.example.spring_jwt_jpa.repository.UserRepository;
 import com.example.spring_jwt_jpa.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class AuthController {
     UserRepository userRepository;
 
     @Autowired
-    UserAppRepository userAppRepository;
+    DeviceRepository deviceRepository;
 
     @Autowired
     RoleRepository roleRepository;
@@ -67,6 +68,38 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.generateToken(authentication);
+
+        // SALVAR O DEVICE TOKEN
+
+        if (loginRequest.getDeviceToken() != null && !"".equals(loginRequest.getDeviceToken())) {
+
+            long userId = tokenProvider.getUserIdFromJWT(jwt);
+
+            User user = userRepository.findById(userId).orElseThrow(
+                    () -> new ResourceNotFoundException("User", "id", userId)
+            );
+
+            Device device = deviceRepository.findByToken(loginRequest.getDeviceToken()).orElse(
+                    new Device()
+            );
+            if (device.getId() == 0) {
+
+                device.setToken(loginRequest.getDeviceToken());
+                device.setPlatform(loginRequest.getPlatform());
+
+                deviceRepository.save(device);
+            }
+
+            if (user.getDevices() != null && user.getDevices().size() > 0) {
+                user.getDevices().add(device);
+            } else {
+                user.setDevices(Collections.singleton(device));
+            }
+
+            userRepository.save(user);
+
+        }
+
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
 
@@ -116,18 +149,18 @@ public class AuthController {
 
     @PostMapping("/app/signup")
     public ResponseEntity<?> registerUserApp(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if(userAppRepository.existsByLogin(signUpRequest.getUsername())) {
+        if(userRepository.existsByLoginAndTipo(signUpRequest.getUsername(), 2)) {
             return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
                     HttpStatus.BAD_REQUEST);
         }
 
-        if(userAppRepository.existsByEmail(signUpRequest.getEmail())) {
+        if(userRepository.existsByEmailAndTipo(signUpRequest.getEmail(), 2)) {
             return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
 
         // Creating user's account
-        UserApp user = new UserApp(signUpRequest.getName(), signUpRequest.getUsername(),
+        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
                 signUpRequest.getEmail(), signUpRequest.getPassword());
 
         user.setSenha(passwordEncoder.encode(user.getSenha()));
@@ -137,7 +170,7 @@ public class AuthController {
 
         user.setRoles(Collections.singleton(userRole));
 
-        UserApp result = userAppRepository.save(user);
+        User result = userRepository.save(user);
 
         return ResponseEntity.ok(result);
     }

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +27,8 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN_MASTER', 'ADMIN_MODULO_USER_ADMINISTRADOR')")
+//    @PreAuthorize("hasAnyRole('USER')")
     public Page<User> listar(@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
                                           @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size) {
 

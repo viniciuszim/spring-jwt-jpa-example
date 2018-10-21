@@ -1,4 +1,4 @@
-package com.example.spring_jwt_jpa.model;
+package com.example.spring_jwt_jpa.enumerador;
 
 /**
  * Created by viniciuszim on 13/10/18.
