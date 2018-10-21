@@ -6,7 +6,6 @@ import com.example.spring_jwt_jpa.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -88,8 +87,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .permitAll()
                     .antMatchers("/api/auth/admin/signin", "/api/auth/app/signin", "/api/auth/app/signup")
                         .permitAll()
-                    .antMatchers(HttpMethod.POST, "/api/user")
-                        .hasAnyRole("ADMIN_MASTER", "ADMIN_MODULO_USER_ADMINISTRADOR")
+//                    .antMatchers(HttpMethod.POST, "/api/user")
+//                        .hasAnyRole("ADMIN_MASTER", "ADMIN_MODULO_USER_ADMINISTRADOR")
                     .antMatchers("/api/userapp/checkLoginAvailability", "/api/userapp/checkEmailAvailability")
                         .permitAll()
                     .anyRequest()

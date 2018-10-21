@@ -1,5 +1,6 @@
 package com.example.spring_jwt_jpa.model;
 
+import com.example.spring_jwt_jpa.enumerador.TypeUser;
 import com.example.spring_jwt_jpa.model.audit.DateAudit;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.NaturalId;
@@ -17,7 +18,7 @@ import java.util.Set;
  */
 
 @Entity
-@Table(name = "user", uniqueConstraints = {
+@Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {
             "login"
         }),
@@ -49,18 +50,28 @@ public class User extends DateAudit {
     @Size(max = 100)
     private String senha;
 
-    private boolean status;
+    @Enumerated(EnumType.ORDINAL)
+    @NaturalId
+    private TypeUser tipo;
 
     @Size(max = 11)
     private String cpf;
 
     private Date dataNascimento;
 
+    private boolean status;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_devices",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "device_id"))
+    private Set<Device> devices = new HashSet<>();
 
     public User() {
 
@@ -72,6 +83,8 @@ public class User extends DateAudit {
         this.email = email;
         this.senha = senha;
     }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -127,6 +140,38 @@ public class User extends DateAudit {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public TypeUser getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TypeUser tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public Date getDataNascimento() {
+        return dataNascimento;
+    }
+
+    public void setDataNascimento(Date dataNascimento) {
+        this.dataNascimento = dataNascimento;
+    }
+
+    public Set<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(Set<Device> devices) {
+        this.devices = devices;
     }
 
 }
